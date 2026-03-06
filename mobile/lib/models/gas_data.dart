@@ -17,14 +17,23 @@ class GasData {
 
   factory GasData.fromJson(Map<String, dynamic> json) {
     final data = (json['data'] as Map<String, dynamic>?) ?? <String, dynamic>{};
+    final readings =
+        (data['readings'] as Map<String, dynamic>?) ?? <String, dynamic>{};
+
+    double parseValue(String key) {
+      final value =
+          readings[key] ?? data[key] ?? json[key] ?? data[key.toLowerCase()];
+      if (value is num) return value.toDouble();
+      return 0;
+    }
 
     return GasData(
       timestamp: (json['timestamp'] ?? DateTime.now().toIso8601String())
           .toString(),
-      temperature: ((data['temperature'] ?? 0) as num).toDouble(),
-      co2: ((data['co2'] ?? 0) as num).toDouble(),
-      humidity: ((data['humidity'] ?? 0) as num).toDouble(),
-      pressure: ((data['pressure'] ?? 0) as num).toDouble(),
+      temperature: parseValue('temperature'),
+      co2: parseValue('co2'),
+      humidity: parseValue('humidity'),
+      pressure: parseValue('pressure'),
       source: (json['source'] ?? 'unknown').toString(),
     );
   }

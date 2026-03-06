@@ -16,7 +16,7 @@ class SocketService {
     _socket = io.io(
       serverUrl,
       io.OptionBuilder()
-          .setTransports(['websocket'])
+          .setTransports(['websocket', 'polling'])
           .enableAutoConnect()
           .build(),
     );

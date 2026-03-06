@@ -15,7 +15,22 @@ class GasAlert {
   });
 }
 
+class ActivityItem {
+  final String message;
+  final String timeAgo;
+  final bool success;
+
+  const ActivityItem({
+    required this.message,
+    required this.timeAgo,
+    required this.success,
+  });
+}
+
 class AppState extends ChangeNotifier {
+  static const String _defaultApiEndpoint =
+      'https://backend-agas.vercel.app/api/gas-data';
+
   final SocketService _socketService = SocketService();
 
   GasData? gasData;
@@ -23,12 +38,48 @@ class AppState extends ChangeNotifier {
   bool fanOn = false;
   bool valveOpen = true;
   bool sensorOnline = true;
-  String serverUrl = 'http://localhost:3000';
+  String serverUrl = _normalizeServerUrl(_defaultApiEndpoint);
   double co2WarningLevel = 800;
   double co2CriticalLevel = 1000;
+  double temperatureWarningLevel = 28;
+  double temperatureCriticalLevel = 32;
   bool enableAlerts = true;
   bool enableSound = true;
+  bool enableVibration = false;
+  bool autoFanControl = false;
   final List<GasAlert> alerts = [];
+  final List<double> co2History = [
+    340,
+    338,
+    336,
+    340,
+    342,
+    339,
+    341,
+    340,
+    345,
+    355,
+    368,
+    375,
+    386,
+    395,
+    402,
+    410,
+    418,
+    430,
+  ];
+  final List<ActivityItem> activity = [
+    const ActivityItem(
+      message: 'Sensor readings normal',
+      timeAgo: 'Just now',
+      success: true,
+    ),
+    const ActivityItem(
+      message: 'System initialized',
+      timeAgo: '5 min ago',
+      success: true,
+    ),
+  ];
 
   bool _isInitialized = false;
 
@@ -50,6 +101,19 @@ class AppState extends ChangeNotifier {
     );
   }
 
+  static String _normalizeServerUrl(String rawUrl) {
+    final trimmed = rawUrl.trim();
+    if (trimmed.isEmpty) return 'http://localhost:3000';
+
+    final uri = Uri.tryParse(trimmed);
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
+      return trimmed;
+    }
+
+    // If a full endpoint like /api/gas-data is provided, keep only origin for sockets.
+    return '${uri.scheme}://${uri.host}${uri.hasPort ? ':${uri.port}' : ''}';
+  }
+
   void _handleGasUpdate(dynamic payload) {
     if (payload is! Map<String, dynamic>) {
       return;
@@ -57,10 +121,28 @@ class AppState extends ChangeNotifier {
 
     gasData = GasData.fromJson(payload);
 
-    if (gasData!.co2 >= co2CriticalLevel) {
+    co2History.add(gasData!.co2);
+    if (co2History.length > 20) {
+      co2History.removeAt(0);
+    }
+
+    _addActivity('Sensor readings updated', 'Just now', true);
+
+    if (autoFanControl &&
+        (gasData!.co2 >= co2WarningLevel ||
+            gasData!.temperature >= temperatureWarningLevel) &&
+        !fanOn) {
+      setFan(true);
+      _addActivity('Fan activated automatically', 'Just now', true);
+    }
+
+    if (gasData!.co2 >= co2CriticalLevel ||
+        gasData!.temperature >= temperatureCriticalLevel) {
       _addAlert('Gas leak detected', gasData!.co2, gasData!.timestamp);
+      _addActivity('Critical condition detected', 'Just now', false);
     } else if (gasData!.co2 >= co2WarningLevel) {
       _addAlert('High gas level', gasData!.co2, gasData!.timestamp);
+      _addActivity('High gas level warning', 'Just now', false);
     }
 
     notifyListeners();
@@ -75,6 +157,7 @@ class AppState extends ChangeNotifier {
         .toString();
 
     _addAlert(title, co2, timestamp);
+    _addActivity(title, 'Just now', false);
     notifyListeners();
   }
 
@@ -86,10 +169,28 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  void _addActivity(String message, String timeAgo, bool success) {
+    activity.insert(
+      0,
+      ActivityItem(message: message, timeAgo: timeAgo, success: success),
+    );
+
+    if (activity.length > 10) {
+      activity.removeRange(10, activity.length);
+    }
+  }
+
   String get safetyStatus {
+    final currentTemperature = gasData?.temperature ?? 0;
     final currentCo2 = gasData?.co2 ?? 0;
-    if (currentCo2 >= co2CriticalLevel) return 'DANGER';
-    if (currentCo2 >= co2WarningLevel) return 'WARNING';
+    if (currentCo2 >= co2CriticalLevel ||
+        currentTemperature >= temperatureCriticalLevel) {
+      return 'DANGER';
+    }
+    if (currentCo2 >= co2WarningLevel ||
+        currentTemperature >= temperatureWarningLevel) {
+      return 'WARNING';
+    }
     return 'SAFE';
   }
 
@@ -112,6 +213,7 @@ class AppState extends ChangeNotifier {
       gasData?.co2 ?? 0,
       DateTime.now().toIso8601String(),
     );
+    _addActivity('Test alert sent', 'Just now', true);
     notifyListeners();
   }
 
@@ -119,16 +221,25 @@ class AppState extends ChangeNotifier {
     required String server,
     required double warningLevel,
     required double criticalLevel,
+    required double temperatureWarning,
+    required double temperatureCritical,
     required bool alertsEnabled,
     required bool soundEnabled,
+    required bool vibrationEnabled,
+    required bool autoFanEnabled,
   }) {
-    final shouldReconnect = server.trim() != serverUrl;
+    final normalizedServer = _normalizeServerUrl(server);
+    final shouldReconnect = normalizedServer != serverUrl;
 
-    serverUrl = server.trim();
+    serverUrl = normalizedServer;
     co2WarningLevel = warningLevel;
     co2CriticalLevel = criticalLevel;
+    temperatureWarningLevel = temperatureWarning;
+    temperatureCriticalLevel = temperatureCritical;
     enableAlerts = alertsEnabled;
     enableSound = soundEnabled;
+    enableVibration = vibrationEnabled;
+    autoFanControl = autoFanEnabled;
 
     if (shouldReconnect) {
       connectSocket();

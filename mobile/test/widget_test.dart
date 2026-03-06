@@ -23,7 +23,7 @@ void main() {
 
     expect(find.text('Dashboard'), findsOneWidget);
     expect(find.text('Alerts'), findsOneWidget);
-    expect(find.text('Control'), findsOneWidget);
+    expect(find.text('Devices'), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
   });
 }

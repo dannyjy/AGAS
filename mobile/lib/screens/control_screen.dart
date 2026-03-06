@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../state/app_state.dart';
-import '../widgets/device_button.dart';
 
 class ControlScreen extends StatelessWidget {
   const ControlScreen({super.key});
@@ -12,80 +11,101 @@ class ControlScreen extends StatelessWidget {
     return Consumer<AppState>(
       builder: (context, appState, _) {
         return Scaffold(
-          appBar: AppBar(title: const Text('System Controls')),
-          body: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          body: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 90),
               children: [
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Fan Status: ${appState.fanOn ? 'ON' : 'OFF'}'),
-                        const SizedBox(height: 8),
-                        Row(
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF181F3D),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFF2E3A66)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.flash_on, color: Color(0xFF00F38D)),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            DeviceButton(
-                              icon: Icons.power,
-                              label: 'Turn On',
-                              onTap: () => appState.setFan(true),
+                            Text(
+                              'System Status',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                            const SizedBox(width: 8),
-                            DeviceButton(
-                              icon: Icons.power_off,
-                              label: 'Turn Off',
-                              onTap: () => appState.setFan(false),
+                            Text(
+                              'All devices connected',
+                              style: TextStyle(color: Color(0xFF9AA6C7)),
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                      Text(
+                        '● Online',
+                        style: TextStyle(color: Color(0xFF00F38D)),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 8),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Gas Valve: ${appState.valveOpen ? 'OPEN' : 'CLOSED'}',
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            DeviceButton(
-                              icon: Icons.lock_open,
-                              label: 'Open Valve',
-                              onTap: () => appState.setValve(true),
-                            ),
-                            const SizedBox(width: 8),
-                            DeviceButton(
-                              icon: Icons.lock,
-                              label: 'Close Valve',
-                              onTap: () => appState.setValve(false),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                const SizedBox(height: 12),
+                _DeviceCard(
+                  icon: Icons.wind_power,
+                  title: 'Exhaust Fan System',
+                  subtitle: 'Automated ventilation control',
+                  statusLabel: appState.fanOn ? 'On' : 'Standby',
+                  statusValue: appState.fanOn ? 'ON' : 'OFF',
+                  active: appState.fanOn,
+                  onChanged: (value) => appState.setFan(value),
+                  leftMetricTitle: 'Speed',
+                  leftMetricValue: appState.fanOn ? 'High' : 'Off',
+                  rightMetricTitle: 'Power',
+                  rightMetricValue: appState.fanOn ? '42W' : '0W',
                 ),
-                const SizedBox(height: 8),
-                Card(
-                  child: ListTile(
-                    title: const Text('Sensor Test'),
-                    subtitle: const Text(
-                      'Send test alert to verify the notification flow.',
-                    ),
-                    trailing: IconButton(
-                      onPressed: appState.testAlert,
-                      icon: const Icon(Icons.science),
-                    ),
+                const SizedBox(height: 12),
+                _DeviceCard(
+                  icon: Icons.gas_meter,
+                  title: 'Gas Valve Controller',
+                  subtitle: 'Emergency shutoff system',
+                  statusLabel: appState.valveOpen ? 'Open' : 'Closed',
+                  statusValue: appState.valveOpen ? 'ON' : 'OFF',
+                  active: appState.valveOpen,
+                  onChanged: (value) => appState.setValve(value),
+                  leftMetricTitle: 'State',
+                  leftMetricValue: appState.valveOpen ? 'Open' : 'Closed',
+                  rightMetricTitle: 'Response',
+                  rightMetricValue: '< 500ms',
+                ),
+                const SizedBox(height: 12),
+                const _SensorCard(),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF181F3D),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFF2E3A66)),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'System Information',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      _InfoRow(label: 'Microcontroller', value: 'Arduino Uno'),
+                      _InfoRow(label: 'Connection', value: 'Serial USB'),
+                      _InfoRow(label: 'Uptime', value: '2h 34m'),
+                      _InfoRow(label: 'Last Update', value: 'Just now'),
+                    ],
                   ),
                 ),
               ],
@@ -93,6 +113,259 @@ class ControlScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _DeviceCard extends StatelessWidget {
+  const _DeviceCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.statusLabel,
+    required this.statusValue,
+    required this.active,
+    required this.onChanged,
+    required this.leftMetricTitle,
+    required this.leftMetricValue,
+    required this.rightMetricTitle,
+    required this.rightMetricValue,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String statusLabel;
+  final String statusValue;
+  final bool active;
+  final ValueChanged<bool> onChanged;
+  final String leftMetricTitle;
+  final String leftMetricValue;
+  final String rightMetricTitle;
+  final String rightMetricValue;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF181F3D),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: active ? const Color(0xFF00AA73) : const Color(0xFF2E3A66),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00F38D).withAlpha(20),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: const Color(0xFF00F38D), size: 28),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(color: Color(0xFF9AA6C7)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF111833),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Status',
+                      style: TextStyle(color: Color(0xFF8A94B6)),
+                    ),
+                    Text(
+                      statusLabel,
+                      style: const TextStyle(
+                        color: Color(0xFF00F38D),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Text(statusValue, style: const TextStyle(color: Colors.white)),
+                const SizedBox(width: 8),
+                Switch(value: active, onChanged: onChanged),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _MetricBox(
+                  title: leftMetricTitle,
+                  value: leftMetricValue,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _MetricBox(
+                  title: rightMetricTitle,
+                  value: rightMetricValue,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SensorCard extends StatelessWidget {
+  const _SensorCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF181F3D),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFF00AA73)),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.show_chart, color: Color(0xFF00F38D)),
+              SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'MQ6 Gas Sensor',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      'LPG and natural gas detection',
+                      style: TextStyle(color: Color(0xFF9AA6C7)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _MetricBox(title: 'Status', value: 'Active'),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: _MetricBox(title: 'Type', value: 'MQ6'),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: _MetricBox(title: 'Accuracy', value: '±5%'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetricBox extends StatelessWidget {
+  const _MetricBox({required this.title, required this.value});
+
+  final String title;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111833),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(color: Color(0xFF8A94B6), fontSize: 12),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Text(label, style: const TextStyle(color: Color(0xFFA6B2D5))),
+          const Spacer(),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
