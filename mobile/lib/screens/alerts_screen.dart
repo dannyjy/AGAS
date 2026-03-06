@@ -33,7 +33,7 @@ class AlertsScreen extends StatelessWidget {
                   'Alerts',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 34,
+                    fontSize: 28,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -70,7 +70,7 @@ class AlertsScreen extends StatelessWidget {
                   'Active Alerts',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 30,
+                    fontSize: 22,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -81,7 +81,7 @@ class AlertsScreen extends StatelessWidget {
                   'Recent Activity',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 30,
+                    fontSize: 22,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -120,7 +120,7 @@ class _CounterCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(value, style: TextStyle(color: color, fontSize: 34)),
+          Text(value, style: TextStyle(color: color, fontSize: 26)),
           const SizedBox(height: 4),
           Text(label, style: const TextStyle(color: Color(0xFF8A94B6))),
         ],
@@ -171,7 +171,7 @@ class _ActiveAlertCard extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
-                        fontSize: 27,
+                        fontSize: 21,
                       ),
                     ),
                     const Spacer(),
@@ -209,7 +209,7 @@ class _ActiveAlertCard extends StatelessWidget {
                     '${alert!.co2.toStringAsFixed(0)} ppm',
                     style: const TextStyle(
                       color: Color(0xFFFFC12A),
-                      fontSize: 34,
+                      fontSize: 28,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -280,7 +280,7 @@ class _ActivityCard extends StatelessWidget {
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
-                    fontSize: 28,
+                    fontSize: 18,
                   ),
                 ),
                 const SizedBox(height: 4),

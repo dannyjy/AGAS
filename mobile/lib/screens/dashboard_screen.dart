@@ -55,7 +55,7 @@ class DashboardScreen extends StatelessWidget {
                           status,
                           style: TextStyle(
                             color: statusColor,
-                            fontSize: 46,
+                            fontSize: 34,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1,
                           ),
@@ -107,7 +107,7 @@ class DashboardScreen extends StatelessWidget {
                     'System Controls',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 24,
+                      fontSize: 20,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -407,7 +407,7 @@ class _ReadingTile extends StatelessWidget {
               text: value,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 42,
+                fontSize: 32,
                 fontWeight: FontWeight.w700,
               ),
               children: [
@@ -415,7 +415,7 @@ class _ReadingTile extends StatelessWidget {
                   text: unit,
                   style: const TextStyle(
                     color: Color(0xFFB4C0E0),
-                    fontSize: 18,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -522,7 +522,7 @@ class _InfoCard extends StatelessWidget {
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w700,
-              fontSize: 28,
+              fontSize: 22,
             ),
           ),
           const SizedBox(height: 12),

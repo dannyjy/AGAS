@@ -21,6 +21,7 @@ class AgasApp extends StatelessWidget {
       create: (_) => AppState(),
       child: MaterialApp(
         title: 'AGAS Mobile',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           scaffoldBackgroundColor: const Color(0xFF070D27),
           colorScheme: ColorScheme.fromSeed(
