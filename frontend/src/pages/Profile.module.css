@@ -1,0 +1,157 @@
+.profile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xl);
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-blue) 0%, #3b5bdb 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-white);
+  flex-shrink: 0;
+}
+
+.headerInfo {
+  flex: 1;
+}
+
+.userName {
+  font-size: var(--font-2xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.userSerial {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+  font-family: 'Courier New', monospace;
+  margin-bottom: var(--spacing-xs);
+}
+
+.userRole {
+  font-size: var(--font-sm);
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.sectionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-xl);
+}
+
+.sectionIcon {
+  font-size: 2.5rem;
+  margin-bottom: var(--spacing-lg);
+}
+
+.itemsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.item {
+  padding: var(--spacing-md);
+  background: var(--secondary-bg);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.itemLabel {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.itemValue {
+  font-size: var(--font-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: right;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.activityItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--secondary-bg);
+  border-radius: 8px;
+}
+
+.activityIcon {
+  font-size: var(--font-2xl);
+  flex-shrink: 0;
+}
+
+.activityContent {
+  flex: 1;
+}
+
+.activityTitle {
+  font-size: var(--font-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.activityTime {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--success-light);
+  color: var(--success);
+  border-radius: 12px;
+  font-size: var(--font-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+  .profileHeader {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .sectionsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .itemValue {
+    text-align: left;
+  }
+}

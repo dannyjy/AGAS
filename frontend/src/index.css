@@ -1,0 +1,131 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Primary Colors */
+  --primary-dark: #1a1d29;
+  --primary-gray: #2d3142;
+  --primary-light: #3d4052;
+  
+  /* Secondary Colors */
+  --secondary-bg: #f5f7fa;
+  --secondary-light: #ffffff;
+  
+  /* Accent Colors */
+  --accent-blue: #4c6ef5;
+  --accent-blue-hover: #3b5bdb;
+  
+  /* Status Colors */
+  --danger: #f03e3e;
+  --danger-light: #ffe3e3;
+  --warning: #fab005;
+  --warning-light: #fff3bf;
+  --success: #37b24d;
+  --success-light: #d3f9d8;
+  --safe: #20c997;
+  
+  /* Text Colors */
+  --text-primary: #212529;
+  --text-secondary: #495057;
+  --text-tertiary: #868e96;
+  --text-white: #ffffff;
+  
+  /* Border & Shadows */
+  --border-color: #dee2e6;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  
+  /* Font Sizes */
+  --font-xs: 0.75rem;
+  --font-sm: 0.875rem;
+  --font-md: 1rem;
+  --font-lg: 1.125rem;
+  --font-xl: 1.25rem;
+  --font-2xl: 1.5rem;
+  --font-3xl: 2rem;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-size: var(--font-md);
+  color: var(--text-primary);
+  background-color: var(--secondary-bg);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--secondary-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-gray);
+}
+
+/* Utility Classes */
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-danger {
+  color: var(--danger);
+}
+
+.text-warning {
+  color: var(--warning);
+}
+
+.text-success {
+  color: var(--success);
+}
+
+.text-safe {
+  color: var(--safe);
+}
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+  :root {
+    --font-sm: 0.8125rem;
+    --font-md: 0.9375rem;
+    --font-lg: 1rem;
+    --font-xl: 1.125rem;
+    --font-2xl: 1.25rem;
+    --font-3xl: 1.75rem;
+  }
+}
