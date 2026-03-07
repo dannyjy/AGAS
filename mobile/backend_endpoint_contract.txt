@@ -98,6 +98,39 @@ Important:
 
 2.2 Client -> Server events
 
+Startup sync (sent immediately after socket connect):
+- get-system-status
+- get-device-status
+- get-fan-status
+- get-valve-status
+- request-current-state
+- fetch-gas-data with apiUrl
+
+Expected backend response events for startup sync:
+- system-status or status-update
+- device-status or state-update
+- fan-status
+- valve-status
+- gas-data-update or sensor_update
+
+Example startup status payload:
+{
+  "state": {
+    "fanOn": false,
+    "valveOpen": true,
+    "sensorOnline": true,
+    "timestamp": "2026-03-07T10:20:00Z"
+  }
+}
+
+Example startup reading payload:
+{
+  "timestamp": "2026-03-07T10:20:00Z",
+  "co2": 430,
+  "gasLevel": 3.4,
+  "sensorId": "dev-001"
+}
+
 Event: fan-control
 Payload:
 { "state": "on" }

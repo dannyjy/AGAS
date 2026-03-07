@@ -12,6 +12,7 @@ class ControlScreen extends StatelessWidget {
     return Consumer<AppState>(
       builder: (context, appState, _) {
         final gasData = appState.gasData;
+        final backendOnline = appState.isBackendOnline;
         return Scaffold(
           body: SafeArea(
             child: ListView(
@@ -27,8 +28,8 @@ class ControlScreen extends StatelessWidget {
                   child: Row(
                     children: [
                       Icon(
-                        appState.isConnected ? Icons.flash_on : Icons.flash_off,
-                        color: appState.isConnected
+                        backendOnline ? Icons.flash_on : Icons.flash_off,
+                        color: backendOnline
                             ? const Color(0xFF00F38D)
                             : const Color(0xFF8A94B6),
                       ),
@@ -45,18 +46,22 @@ class ControlScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              appState.isConnected
-                                  ? 'Connected to backend'
-                                  : 'Waiting for backend connection',
+                              backendOnline
+                                  ? 'Connected to backend and API healthy'
+                                  : 'Backend unavailable or API unhealthy',
                               style: const TextStyle(color: Color(0xFF9AA6C7)),
+                            ),
+                            Text(
+                              'Socket: ${appState.isConnected ? 'online' : 'offline'}  |  API: ${appState.healthStatus}',
+                              style: const TextStyle(color: Color(0xFF7E8AB3)),
                             ),
                           ],
                         ),
                       ),
                       Text(
-                        appState.isConnected ? '● Online' : '● Offline',
+                        backendOnline ? '● Online' : '● Offline',
                         style: TextStyle(
-                          color: appState.isConnected
+                          color: backendOnline
                               ? const Color(0xFF00F38D)
                               : const Color(0xFF8A94B6),
                         ),
@@ -121,6 +126,10 @@ class ControlScreen extends StatelessWidget {
                       _InfoRow(
                         label: 'Last Update',
                         value: gasData?.timestamp ?? 'No data',
+                      ),
+                      _InfoRow(
+                        label: 'Backend Status',
+                        value: appState.backendSystemStatus.toUpperCase(),
                       ),
                     ],
                   ),
