@@ -227,7 +227,7 @@ class _LiveSensorCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _LiveRow(label: 'Sensor', value: gasData.deviceName),
+                _LiveRow(label: 'Sensor ID', value: gasData.sensorId),
                 _LiveRow(
                   label: 'CO2',
                   value: '${gasData.co2.toStringAsFixed(1)} ppm',
@@ -237,7 +237,6 @@ class _LiveSensorCard extends StatelessWidget {
                   value: gasData.gasLevel.toStringAsFixed(1),
                 ),
                 _LiveRow(label: 'Timestamp', value: gasData.timestamp),
-                _LiveRow(label: 'Source', value: gasData.source),
               ],
             ),
         ],

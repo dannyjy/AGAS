@@ -1,0 +1,140 @@
+AGAS MOBILE BACKEND CONTRACT (v1)
+Date: 2026-03-07
+
+Base URL
+- https://agas-backend-agtlp.ondigitalocean.app
+
+1) Required HTTP Endpoints
+
+1.1 POST /api/gas-data
+Purpose:
+- Receive sensor readings and broadcast updates to connected Socket.IO clients.
+
+Request Headers:
+- Content-Type: application/json
+
+Request Body (recommended):
+{
+  "timestamp": "2026-03-07T10:15:00Z",
+  "co2": 420,
+  "gasLevel": 3.1,
+  "sensorId": "dev-001",
+}
+
+Response Body (current backend behavior):
+{
+  "message": "Gas data received and broadcast to clients!"
+}
+
+Status Codes:
+- 200: Accepted and broadcasted
+- 400: Invalid payload
+- 500: Server error
+
+1.2 GET /health (recommended, currently missing)
+Purpose:
+- Provide backend/system health status for app diagnostics.
+
+Response Body (example):
+{
+  "status": "ok",
+  "timestamp": "2026-03-07T10:20:00Z",
+  "api": true,
+  "socketIo": true,
+  "database": true,
+  "version": "1.0.0"
+}
+
+Status Codes:
+- 200: Healthy
+- 503: Unhealthy/degraded
+
+2) Required Socket.IO Contract
+
+Connection URL:
+- Same backend origin as Base URL
+- Transport supported: websocket and polling
+
+2.1 Server -> Client events
+
+Event: gas-data-update
+Event: sensor_update
+Purpose:
+- Push latest readings to mobile app.
+
+Payload (flat format):
+{
+  "timestamp": "2026-03-07T10:15:00Z",
+  "co2": 420,
+  "gasLevel": 3.1,
+  "sensorId": "dev-001"
+}
+
+Payload (nested format also accepted by app parser):
+{
+  "data": {
+    "timestamp": "2026-03-07T10:15:00Z",
+    "sensorId": "dev-001",
+    "readings": {
+      "co2": 420,
+      "gas_level": 3.1
+    }
+  }
+}
+
+Event: gas-alert
+Purpose:
+- Notify critical/warning alert to app.
+
+Payload:
+{
+  "title": "Gas leak detected",
+  "co2": 1600,
+  "timestamp": "2026-03-07T10:16:00Z"
+}
+
+Important:
+- co2 must be numeric (number), not string.
+
+2.2 Client -> Server events
+
+Event: fan-control
+Payload:
+{ "state": "on" }
+or
+{ "state": "off" }
+
+Event: valve-control
+Payload:
+{ "state": "open" }
+or
+{ "state": "close" }
+
+Event: fetch-gas-data (optional current support)
+Payload:
+{ "apiUrl": "https://.../api/gas-data" }
+
+3) Field Compatibility Notes
+
+The mobile parser accepts these variants:
+- gas level keys: gasLevel or gas_level
+- sensor id keys: sensorId or sensor_id
+- device name keys: deviceName or device_name
+- timestamp keys: timestamp or createdAt
+- source key: source
+
+4) Validation Rules (recommended)
+
+- timestamp: ISO8601 string
+- co2: number >= 0
+- gasLevel/gas_level: number >= 0
+- sensorId: non-empty string
+- deviceName: non-empty string
+- source: non-empty string
+
+5) Current Observed Production Behavior
+
+- GET /api/gas-data returns 404 (expected if route is POST-only)
+- POST /api/gas-data returns 200 and success message
+- Socket.IO polling handshake endpoint is reachable
+- No dedicated /health or /system-status endpoint found

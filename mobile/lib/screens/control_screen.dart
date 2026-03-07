@@ -115,16 +115,8 @@ class ControlScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 10),
                       _InfoRow(
-                        label: 'Device',
-                        value: gasData?.deviceName ?? 'No data',
-                      ),
-                      _InfoRow(
                         label: 'Sensor ID',
                         value: gasData?.sensorId ?? 'No data',
-                      ),
-                      _InfoRow(
-                        label: 'Source',
-                        value: gasData?.source ?? 'No data',
                       ),
                       _InfoRow(
                         label: 'Last Update',

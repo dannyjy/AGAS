@@ -3,16 +3,12 @@ class GasData {
   final double co2;
   final double gasLevel;
   final String sensorId;
-  final String deviceName;
-  final String source;
 
   GasData({
     required this.timestamp,
     required this.co2,
     required this.gasLevel,
     required this.sensorId,
-    required this.deviceName,
-    required this.source,
   });
 
   factory GasData.fromJson(Map<String, dynamic> json) {
@@ -59,8 +55,6 @@ class GasData {
       co2: parseNum(['co2']),
       gasLevel: parseNum(['gas_level', 'gasLevel']),
       sensorId: sensorId,
-      deviceName: parseString(['deviceName', 'device_name'], sensorId),
-      source: parseString(['source'], 'unknown'),
     );
   }
 }
