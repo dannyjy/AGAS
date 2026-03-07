@@ -1,40 +1,66 @@
 class GasData {
   final String timestamp;
-  final double temperature;
   final double co2;
-  final double humidity;
-  final double pressure;
+  final double gasLevel;
+  final String sensorId;
+  final String deviceName;
   final String source;
 
   GasData({
     required this.timestamp,
-    required this.temperature,
     required this.co2,
-    required this.humidity,
-    required this.pressure,
+    required this.gasLevel,
+    required this.sensorId,
+    required this.deviceName,
     required this.source,
   });
 
   factory GasData.fromJson(Map<String, dynamic> json) {
-    final data = (json['data'] as Map<String, dynamic>?) ?? <String, dynamic>{};
-    final readings =
-        (data['readings'] as Map<String, dynamic>?) ?? <String, dynamic>{};
+    Map<String, dynamic> mapFrom(dynamic value) {
+      if (value is Map<String, dynamic>) return value;
+      if (value is Map) return value.map((k, v) => MapEntry('$k', v));
+      return <String, dynamic>{};
+    }
 
-    double parseValue(String key) {
-      final value =
-          readings[key] ?? data[key] ?? json[key] ?? data[key.toLowerCase()];
-      if (value is num) return value.toDouble();
+    final data = mapFrom(json['data']);
+    final payload = mapFrom(json['payload']);
+    final root = data.isNotEmpty ? data : payload;
+    final readings = mapFrom(root['readings']);
+
+    double parseNum(List<String> keys) {
+      for (final key in keys) {
+        final value = readings[key] ?? root[key] ?? json[key];
+        if (value is num) return value.toDouble();
+        if (value is String) {
+          final parsed = double.tryParse(value);
+          if (parsed != null) return parsed;
+        }
+      }
       return 0;
     }
 
+    String parseString(List<String> keys, String fallback) {
+      for (final key in keys) {
+        final value = root[key] ?? json[key];
+        if (value != null && value.toString().trim().isNotEmpty) {
+          return value.toString();
+        }
+      }
+      return fallback;
+    }
+
+    final sensorId = parseString(['sensorId', 'sensor_id'], 'Main Sensor Hub');
+
     return GasData(
-      timestamp: (json['timestamp'] ?? DateTime.now().toIso8601String())
-          .toString(),
-      temperature: parseValue('temperature'),
-      co2: parseValue('co2'),
-      humidity: parseValue('humidity'),
-      pressure: parseValue('pressure'),
-      source: (json['source'] ?? 'unknown').toString(),
+      timestamp: parseString([
+        'timestamp',
+        'createdAt',
+      ], DateTime.now().toIso8601String()),
+      co2: parseNum(['co2']),
+      gasLevel: parseNum(['gas_level', 'gasLevel']),
+      sensorId: sensorId,
+      deviceName: parseString(['deviceName', 'device_name'], sensorId),
+      source: parseString(['source'], 'unknown'),
     );
   }
 }

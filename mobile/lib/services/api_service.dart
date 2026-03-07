@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const baseUrl = 'https://backend-agas.vercel.app';
+  static const baseUrl = 'https://agas-backend-agtlp.ondigitalocean.app';
 
   static Future<String> sendGasData(
     Map<String, dynamic> data, {
@@ -15,8 +15,13 @@ class ApiService {
     Uri endpoint;
     if (parsed != null && parsed.path.endsWith('/api/gas-data')) {
       endpoint = parsed;
+    } else if (parsed != null && parsed.hasScheme && parsed.host.isNotEmpty) {
+      endpoint = parsed.resolve('/api/gas-data');
     } else {
-      endpoint = Uri.parse('$rawUrl/api/gas-data');
+      final normalized = rawUrl.endsWith('/')
+          ? rawUrl.substring(0, rawUrl.length - 1)
+          : rawUrl;
+      endpoint = Uri.parse('$normalized/api/gas-data');
     }
 
     final response = await http.post(

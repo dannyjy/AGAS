@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'screens/alerts_screen.dart';
 import 'screens/control_screen.dart';
 import 'screens/dashboard_screen.dart';
-import 'screens/settings_screen.dart';
 import 'screens/splash_screen.dart';
 import 'state/app_state.dart';
 
@@ -66,7 +65,6 @@ class _HomeScreenState extends State<HomeScreen> {
     DashboardScreen(),
     AlertsScreen(),
     ControlScreen(),
-    SettingsScreen(),
   ];
 
   @override
@@ -106,11 +104,6 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.dns_outlined),
               activeIcon: Icon(Icons.dns),
               label: 'Devices',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              activeIcon: Icon(Icons.settings),
-              label: 'Settings',
             ),
           ],
         ),

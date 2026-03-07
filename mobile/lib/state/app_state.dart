@@ -29,7 +29,7 @@ class ActivityItem {
 
 class AppState extends ChangeNotifier {
   static const String _defaultApiEndpoint =
-      'https://backend-agas.vercel.app/api/gas-data';
+      'https://agas-backend-agtlp.ondigitalocean.app/api/gas-data';
 
   final SocketService _socketService = SocketService();
 
@@ -39,47 +39,17 @@ class AppState extends ChangeNotifier {
   bool valveOpen = true;
   bool sensorOnline = true;
   String serverUrl = _normalizeServerUrl(_defaultApiEndpoint);
-  double co2WarningLevel = 800;
-  double co2CriticalLevel = 1000;
-  double temperatureWarningLevel = 28;
-  double temperatureCriticalLevel = 32;
+  double co2WarningLevel = 1000;
+  double co2CriticalLevel = 1500;
+  double gasWarningLevel = 10;
+  double gasCriticalLevel = 20;
   bool enableAlerts = true;
   bool enableSound = true;
   bool enableVibration = false;
   bool autoFanControl = false;
   final List<GasAlert> alerts = [];
-  final List<double> co2History = [
-    340,
-    338,
-    336,
-    340,
-    342,
-    339,
-    341,
-    340,
-    345,
-    355,
-    368,
-    375,
-    386,
-    395,
-    402,
-    410,
-    418,
-    430,
-  ];
-  final List<ActivityItem> activity = [
-    const ActivityItem(
-      message: 'Sensor readings normal',
-      timeAgo: 'Just now',
-      success: true,
-    ),
-    const ActivityItem(
-      message: 'System initialized',
-      timeAgo: '5 min ago',
-      success: true,
-    ),
-  ];
+  final List<double> co2History = [];
+  final List<ActivityItem> activity = [];
 
   bool _isInitialized = false;
 
@@ -115,11 +85,11 @@ class AppState extends ChangeNotifier {
   }
 
   void _handleGasUpdate(dynamic payload) {
-    if (payload is! Map<String, dynamic>) {
+    if (payload is! Map) {
       return;
     }
 
-    gasData = GasData.fromJson(payload);
+    gasData = GasData.fromJson(payload.map((k, v) => MapEntry('$k', v)));
 
     co2History.add(gasData!.co2);
     if (co2History.length > 20) {
@@ -130,17 +100,18 @@ class AppState extends ChangeNotifier {
 
     if (autoFanControl &&
         (gasData!.co2 >= co2WarningLevel ||
-            gasData!.temperature >= temperatureWarningLevel) &&
+            gasData!.gasLevel >= gasWarningLevel) &&
         !fanOn) {
       setFan(true);
       _addActivity('Fan activated automatically', 'Just now', true);
     }
 
     if (gasData!.co2 >= co2CriticalLevel ||
-        gasData!.temperature >= temperatureCriticalLevel) {
+        gasData!.gasLevel >= gasCriticalLevel) {
       _addAlert('Gas leak detected', gasData!.co2, gasData!.timestamp);
       _addActivity('Critical condition detected', 'Just now', false);
-    } else if (gasData!.co2 >= co2WarningLevel) {
+    } else if (gasData!.co2 >= co2WarningLevel ||
+        gasData!.gasLevel >= gasWarningLevel) {
       _addAlert('High gas level', gasData!.co2, gasData!.timestamp);
       _addActivity('High gas level warning', 'Just now', false);
     }
@@ -181,14 +152,16 @@ class AppState extends ChangeNotifier {
   }
 
   String get safetyStatus {
-    final currentTemperature = gasData?.temperature ?? 0;
+    if (gasData == null) {
+      return 'NO DATA';
+    }
+
     final currentCo2 = gasData?.co2 ?? 0;
-    if (currentCo2 >= co2CriticalLevel ||
-        currentTemperature >= temperatureCriticalLevel) {
+    final currentGasLevel = gasData?.gasLevel ?? 0;
+    if (currentCo2 >= co2CriticalLevel || currentGasLevel >= gasCriticalLevel) {
       return 'DANGER';
     }
-    if (currentCo2 >= co2WarningLevel ||
-        currentTemperature >= temperatureWarningLevel) {
+    if (currentCo2 >= co2WarningLevel || currentGasLevel >= gasWarningLevel) {
       return 'WARNING';
     }
     return 'SAFE';
@@ -206,23 +179,12 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void testAlert() {
-    _socketService.sendTestAlert();
-    _addAlert(
-      'Test alert',
-      gasData?.co2 ?? 0,
-      DateTime.now().toIso8601String(),
-    );
-    _addActivity('Test alert sent', 'Just now', true);
-    notifyListeners();
-  }
-
   void updateSettings({
     required String server,
     required double warningLevel,
     required double criticalLevel,
-    required double temperatureWarning,
-    required double temperatureCritical,
+    required double gasWarning,
+    required double gasCritical,
     required bool alertsEnabled,
     required bool soundEnabled,
     required bool vibrationEnabled,
@@ -234,8 +196,8 @@ class AppState extends ChangeNotifier {
     serverUrl = normalizedServer;
     co2WarningLevel = warningLevel;
     co2CriticalLevel = criticalLevel;
-    temperatureWarningLevel = temperatureWarning;
-    temperatureCriticalLevel = temperatureCritical;
+    gasWarningLevel = gasWarning;
+    gasCriticalLevel = gasCritical;
     enableAlerts = alertsEnabled;
     enableSound = soundEnabled;
     enableVibration = vibrationEnabled;

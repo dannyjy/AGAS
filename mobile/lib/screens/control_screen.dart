@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/gas_data.dart';
 import '../state/app_state.dart';
 
 class ControlScreen extends StatelessWidget {
@@ -10,6 +11,7 @@ class ControlScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AppState>(
       builder: (context, appState, _) {
+        final gasData = appState.gasData;
         return Scaffold(
           body: SafeArea(
             child: ListView(
@@ -22,10 +24,15 @@ class ControlScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: const Color(0xFF2E3A66)),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.flash_on, color: Color(0xFF00F38D)),
-                      SizedBox(width: 8),
+                      Icon(
+                        appState.isConnected ? Icons.flash_on : Icons.flash_off,
+                        color: appState.isConnected
+                            ? const Color(0xFF00F38D)
+                            : const Color(0xFF8A94B6),
+                      ),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,15 +45,21 @@ class ControlScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              'All devices connected',
-                              style: TextStyle(color: Color(0xFF9AA6C7)),
+                              appState.isConnected
+                                  ? 'Connected to backend'
+                                  : 'Waiting for backend connection',
+                              style: const TextStyle(color: Color(0xFF9AA6C7)),
                             ),
                           ],
                         ),
                       ),
                       Text(
-                        '● Online',
-                        style: TextStyle(color: Color(0xFF00F38D)),
+                        appState.isConnected ? '● Online' : '● Offline',
+                        style: TextStyle(
+                          color: appState.isConnected
+                              ? const Color(0xFF00F38D)
+                              : const Color(0xFF8A94B6),
+                        ),
                       ),
                     ],
                   ),
@@ -80,7 +93,7 @@ class ControlScreen extends StatelessWidget {
                   rightMetricValue: '< 500ms',
                 ),
                 const SizedBox(height: 12),
-                const _SensorCard(),
+                _SensorCard(gasData: gasData),
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(14),
@@ -89,10 +102,10 @@ class ControlScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: const Color(0xFF2E3A66)),
                   ),
-                  child: const Column(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'System Information',
                         style: TextStyle(
                           color: Colors.white,
@@ -100,11 +113,23 @@ class ControlScreen extends StatelessWidget {
                           fontSize: 18,
                         ),
                       ),
-                      SizedBox(height: 10),
-                      _InfoRow(label: 'Microcontroller', value: 'Arduino Uno'),
-                      _InfoRow(label: 'Connection', value: 'Serial USB'),
-                      _InfoRow(label: 'Uptime', value: '2h 34m'),
-                      _InfoRow(label: 'Last Update', value: 'Just now'),
+                      const SizedBox(height: 10),
+                      _InfoRow(
+                        label: 'Device',
+                        value: gasData?.deviceName ?? 'No data',
+                      ),
+                      _InfoRow(
+                        label: 'Sensor ID',
+                        value: gasData?.sensorId ?? 'No data',
+                      ),
+                      _InfoRow(
+                        label: 'Source',
+                        value: gasData?.source ?? 'No data',
+                      ),
+                      _InfoRow(
+                        label: 'Last Update',
+                        value: gasData?.timestamp ?? 'No data',
+                      ),
                     ],
                   ),
                 ),
@@ -248,7 +273,9 @@ class _DeviceCard extends StatelessWidget {
 }
 
 class _SensorCard extends StatelessWidget {
-  const _SensorCard();
+  const _SensorCard({required this.gasData});
+
+  final GasData? gasData;
 
   @override
   Widget build(BuildContext context) {
@@ -259,10 +286,10 @@ class _SensorCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFF00AA73)),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(Icons.show_chart, color: Color(0xFF00F38D)),
               SizedBox(width: 10),
@@ -286,19 +313,32 @@ class _SensorCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
-                child: _MetricBox(title: 'Status', value: 'Active'),
+                child: _MetricBox(
+                  title: 'Status',
+                  value: gasData == null ? 'No data' : 'Active',
+                ),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Expanded(
-                child: _MetricBox(title: 'Type', value: 'MQ6'),
+                child: _MetricBox(
+                  title: 'CO2',
+                  value: gasData == null
+                      ? '--'
+                      : '${gasData!.co2.toStringAsFixed(1)} ppm',
+                ),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Expanded(
-                child: _MetricBox(title: 'Accuracy', value: '±5%'),
+                child: _MetricBox(
+                  title: 'Gas',
+                  value: gasData == null
+                      ? '--'
+                      : gasData!.gasLevel.toStringAsFixed(1),
+                ),
               ),
             ],
           ),

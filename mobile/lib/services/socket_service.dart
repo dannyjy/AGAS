@@ -29,6 +29,10 @@ class SocketService {
       onGasUpdate(data);
     });
 
+    _socket?.on('sensor_update', (data) {
+      onGasUpdate(data);
+    });
+
     _socket?.on('gas-alert', (data) {
       onAlert(data);
     });
@@ -52,10 +56,6 @@ class SocketService {
 
   void setValve(bool open) {
     _socket?.emit('valve-control', {'state': open ? 'open' : 'close'});
-  }
-
-  void sendTestAlert() {
-    _socket?.emit('test-alert');
   }
 
   void disconnect() {

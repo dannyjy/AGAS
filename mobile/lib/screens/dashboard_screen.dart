@@ -11,15 +11,11 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AppState>(
       builder: (context, appState, _) {
-        final gasData = appState.gasData;
-        final temperature = gasData?.temperature ?? 32;
-        final co2 = gasData?.co2 ?? 430;
-        final humidity = gasData?.humidity ?? 65;
-        final pressure = gasData?.pressure ?? 1009;
         final status = appState.safetyStatus;
         final statusColor = switch (status) {
           'DANGER' => const Color(0xFFFF3B5C),
           'WARNING' => const Color(0xFFFFC12A),
+          'NO DATA' => const Color(0xFF8A94B6),
           _ => const Color(0xFF00F38D),
         };
 
@@ -64,45 +60,6 @@ class DashboardScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  GridView.count(
-                    crossAxisCount: 2,
-                    childAspectRatio: 1.2,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    children: [
-                      _ReadingTile(
-                        icon: Icons.thermostat,
-                        title: 'Temperature',
-                        value: temperature.toStringAsFixed(1),
-                        unit: '°C',
-                        iconColor: const Color(0xFF00E58F),
-                      ),
-                      _ReadingTile(
-                        icon: Icons.air,
-                        title: 'CO2',
-                        value: co2.toStringAsFixed(0),
-                        unit: 'ppm',
-                        iconColor: const Color(0xFFFFC12A),
-                      ),
-                      _ReadingTile(
-                        icon: Icons.water_drop,
-                        title: 'Humidity',
-                        value: humidity.toStringAsFixed(0),
-                        unit: '%',
-                        iconColor: const Color(0xFF00E58F),
-                      ),
-                      _ReadingTile(
-                        icon: Icons.speed,
-                        title: 'Pressure',
-                        value: pressure.toStringAsFixed(0),
-                        unit: 'hPa',
-                        iconColor: const Color(0xFF00F38D),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
                   const Text(
                     'System Controls',
                     style: TextStyle(
@@ -134,67 +91,83 @@ class DashboardScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  const _AiRecommendationsSection(),
+                  _LiveSensorCard(appState: appState),
                   const SizedBox(height: 14),
                   _InfoCard(
                     title: 'Recent Activity',
-                    child: Column(
-                      children: appState.activity
-                          .take(3)
-                          .map(
-                            (entry) => Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Icon(
-                                    Icons.circle,
-                                    size: 8,
-                                    color: entry.success
-                                        ? const Color(0xFF00F38D)
-                                        : const Color(0xFF8A94B6),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
+                    child: appState.activity.isEmpty
+                        ? const Text(
+                            'Waiting for backend activity...',
+                            style: TextStyle(color: Color(0xFF8A94B6)),
+                          )
+                        : Column(
+                            children: appState.activity
+                                .take(3)
+                                .map(
+                                  (entry) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: Row(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          entry.message,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w600,
-                                          ),
+                                        Icon(
+                                          Icons.circle,
+                                          size: 8,
+                                          color: entry.success
+                                              ? const Color(0xFF00F38D)
+                                              : const Color(0xFF8A94B6),
                                         ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          entry.timeAgo,
-                                          style: const TextStyle(
-                                            color: Color(0xFF8A94B6),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                entry.message,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                entry.timeAgo,
+                                                style: const TextStyle(
+                                                  color: Color(0xFF8A94B6),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          )
-                          .toList(),
-                    ),
+                                )
+                                .toList(),
+                          ),
                   ),
                   const SizedBox(height: 14),
                   _InfoCard(
                     title: 'Gas Levels (Real-time)',
-                    child: SizedBox(
-                      height: 260,
-                      child: CustomPaint(
-                        painter: _SimpleLineChartPainter(
-                          points: appState.co2History,
-                        ),
-                      ),
-                    ),
+                    child: appState.co2History.isEmpty
+                        ? const SizedBox(
+                            height: 80,
+                            child: Center(
+                              child: Text(
+                                'No backend readings yet.',
+                                style: TextStyle(color: Color(0xFF8A94B6)),
+                              ),
+                            ),
+                          )
+                        : SizedBox(
+                            height: 260,
+                            child: CustomPaint(
+                              painter: _SimpleLineChartPainter(
+                                points: appState.co2History,
+                              ),
+                            ),
+                          ),
                   ),
                 ],
               ),
@@ -206,11 +179,15 @@ class DashboardScreen extends StatelessWidget {
   }
 }
 
-class _AiRecommendationsSection extends StatelessWidget {
-  const _AiRecommendationsSection();
+class _LiveSensorCard extends StatelessWidget {
+  const _LiveSensorCard({required this.appState});
+
+  final AppState appState;
 
   @override
   Widget build(BuildContext context) {
+    final gasData = appState.gasData;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -221,21 +198,17 @@ class _AiRecommendationsSection extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Row(
+        children: [
+          const Row(
             children: [
               CircleAvatar(
                 radius: 14,
                 backgroundColor: Color(0x1F00F38D),
-                child: Icon(
-                  Icons.auto_awesome,
-                  size: 16,
-                  color: Color(0xFF00F38D),
-                ),
+                child: Icon(Icons.sensors, size: 16, color: Color(0xFF00F38D)),
               ),
               SizedBox(width: 10),
               Text(
-                'AI Recommendations',
+                'Live Backend Data',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
@@ -244,182 +217,61 @@ class _AiRecommendationsSection extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 12),
-          _AiRecommendationTile(
-            title: 'Ventilation Optimization',
-            description:
-                'CO2 levels peak around 2 PM. Consider scheduling the exhaust fan 15 mins prior.',
-            action: 'Schedule Fan',
-          ),
-          SizedBox(height: 10),
-          _AiRecommendationTile(
-            title: 'Sensor Calibration',
-            description:
-                'Humidity sensor variance detected compared to historical baseline.',
-            action: 'Recalibrate',
-            badgeText: 'Attention',
-            badgeColor: Color(0x33FFC12A),
-            badgeTextColor: Color(0xFFFFC12A),
-          ),
-          SizedBox(height: 10),
-          _AiRecommendationTile(
-            title: 'Energy Efficiency',
-            description:
-                'Current ventilation patterns are optimal. 12% energy saved this week.',
-            action: 'View Report',
-            badgeText: 'Optimal',
-            badgeColor: Color(0x3300F38D),
-            badgeTextColor: Color(0xFF00F38D),
-          ),
+          const SizedBox(height: 12),
+          if (gasData == null)
+            const Text(
+              'Waiting for readings from backend websocket...',
+              style: TextStyle(color: Color(0xFF8A94B6)),
+            )
+          else
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _LiveRow(label: 'Sensor', value: gasData.deviceName),
+                _LiveRow(
+                  label: 'CO2',
+                  value: '${gasData.co2.toStringAsFixed(1)} ppm',
+                ),
+                _LiveRow(
+                  label: 'Gas Level',
+                  value: gasData.gasLevel.toStringAsFixed(1),
+                ),
+                _LiveRow(label: 'Timestamp', value: gasData.timestamp),
+                _LiveRow(label: 'Source', value: gasData.source),
+              ],
+            ),
         ],
       ),
     );
   }
 }
 
-class _AiRecommendationTile extends StatelessWidget {
-  const _AiRecommendationTile({
-    required this.title,
-    required this.description,
-    required this.action,
-    this.badgeText,
-    this.badgeColor,
-    this.badgeTextColor,
-  });
+class _LiveRow extends StatelessWidget {
+  const _LiveRow({required this.label, required this.value});
 
-  final String title;
-  final String description;
-  final String action;
-  final String? badgeText;
-  final Color? badgeColor;
-  final Color? badgeTextColor;
+  final String label;
+  final String value;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF111833),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFF2E3A66)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              if (badgeText != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: badgeColor ?? const Color(0x333B82F6),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    badgeText!,
-                    style: TextStyle(
-                      color: badgeTextColor ?? const Color(0xFF3B82F6),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            description,
-            style: const TextStyle(color: Color(0xFFAAB6D8), height: 1.3),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            '$action →',
-            style: const TextStyle(
-              color: Color(0xFF00F38D),
-              fontWeight: FontWeight.w600,
+          SizedBox(
+            width: 90,
+            child: Text(
+              label,
+              style: const TextStyle(color: Color(0xFF8A94B6)),
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ReadingTile extends StatelessWidget {
-  const _ReadingTile({
-    required this.icon,
-    required this.title,
-    required this.value,
-    required this.unit,
-    required this.iconColor,
-  });
-
-  final IconData icon;
-  final String title;
-  final String value;
-  final String unit;
-  final Color iconColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF181F3D),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF2E3A66)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: iconColor.withAlpha(30),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: iconColor),
-              ),
-              const SizedBox(width: 10),
-              Text(title, style: const TextStyle(color: Color(0xFFAAB6D8))),
-            ],
-          ),
-          const Spacer(),
-          RichText(
-            text: TextSpan(
-              text: value,
+          Expanded(
+            child: Text(
+              value,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
               ),
-              children: [
-                TextSpan(
-                  text: unit,
-                  style: const TextStyle(
-                    color: Color(0xFFB4C0E0),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
             ),
           ),
         ],
