@@ -4,8 +4,8 @@ import { useAuth } from './AuthContext';
 
 const SocketContext = createContext(null);
 
-const SERVER_URL = import.meta.env.VITE_SOCKET_URL || 'https://backend-agas.vercel.app';
-// const SERVER_URL = import.meta.env.VITE_SOCKET_URL || 'https://agas-backend-agtlp.ondigitalocean.app';
+// const SERVER_URL = import.meta.env.VITE_SOCKET_URL || '"https://backend-agas.vercel.app/';
+const SERVER_URL = import.meta.env.VITE_SOCKET_URL || 'https://agas-backend-agtlp.ondigitalocean.app';
 const SOCKET_PATH = import.meta.env.VITE_SOCKET_PATH || '/socket.io';
 
 export const SocketProvider = ({ children }) => {
